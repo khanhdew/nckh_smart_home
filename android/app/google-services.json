@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "786118704628",
+    "project_id": "nckh-app-82cb6",
+    "storage_bucket": "nckh-app-82cb6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:786118704628:android:af3055d007dfb07b4bcda1",
+        "android_client_info": {
+          "package_name": "com.nckh_smart_home"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbpfxcprNtkd4J991v8CnzXr_9bNksb48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
