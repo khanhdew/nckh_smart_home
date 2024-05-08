@@ -26,24 +26,21 @@ import {
 import Slider from '@react-native-community/slider';
 
 interface IProps {
-  deviceId: string;
+  deviceUuid: string;
 }
 type DeviceDetailScreenProps = RouteProp<RootStackParamList, 'deviceDetail'>;
 
-const DeviceItemList = ({deviceId}: IProps) => {
+const DeviceItemList = ({deviceUuid}: IProps) => {
   const navigation = useNavigation<DeviceDetailScreenProps>();
   const dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
   const device: Device | undefined = useSelector<RootState, Device[]>(
     state => state.device.listDevice,
-  ).find(device => device.id === deviceId);
-  if (device === undefined) {
-    throw new Error('Device not found');
-  }
+  ).find(device => device.uuid === deviceUuid);
   const [changedDevice, setChangedDevice] = useState<Device>(device);
   const [lightDimValue, setLightDimValue] = useState<number>(0);
 
-  const deviceInfoHandle = (id: string): void => {
+  const deviceInfoHandle = (): void => {
     navigation.navigate('DeviceDetailInfo', {
       device: device,
     });
@@ -75,9 +72,7 @@ const DeviceItemList = ({deviceId}: IProps) => {
     console.log(changedDevice);
   };
   return (
-    <Card
-      onPress={() => deviceInfoHandle(device.id)}
-      style={{marginVertical: 8}}>
+    <Card onPress={() => deviceInfoHandle()} style={{marginVertical: 8}}>
       <Card.Content
         style={{
           flexDirection: 'row',

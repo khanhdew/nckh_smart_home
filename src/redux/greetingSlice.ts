@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import type {PayloadAction} from '@reduxjs/toolkit';
-import {getWeatherCondition} from '../services/greetingApi';
+import {getIPv4, getWeatherCondition} from '../services/greetingApi';
 import {IWeatherCondition} from '../interfaces/greeting';
 
 interface ITimeState {
@@ -15,6 +15,7 @@ export interface GreetingState {
   greetingMessage: string;
   time: ITimeState;
   weatherCondition: IWeatherCondition | undefined;
+  ipv4: string;
 }
 
 const getSession = (): string => {
@@ -75,6 +76,7 @@ const initialState: GreetingState = {
       },
     },
   },
+  ipv4: '',
 };
 
 export const greetingSlice = createSlice({
@@ -89,6 +91,7 @@ export const greetingSlice = createSlice({
         state.session = action.payload.session;
         state.time = action.payload.time;
         state.weatherCondition = action.payload.weatherCondition;
+        state.ipv4 = action.payload.ipv4;
       },
     );
   },
@@ -101,8 +104,9 @@ export const initGreetingInformation = createAsyncThunk(
     const greetingMessage = getGreetingMessage(session);
     const time = getTime();
     const weatherCondition = await getWeatherCondition();
+    const ipv4 = await getIPv4();
 
-    return {session, greetingMessage, time, weatherCondition};
+    return {session, greetingMessage, time, weatherCondition, ipv4};
   },
 );
 

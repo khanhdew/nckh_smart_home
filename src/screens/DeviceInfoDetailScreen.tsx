@@ -1,4 +1,4 @@
-import {StyleSheet, View, ScrollView} from 'react-native';
+import {StyleSheet, View, ScrollView, AppState} from 'react-native';
 import {Text} from 'react-native-paper';
 import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -23,6 +23,7 @@ import {RootState} from '../redux/store';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {DeviceManagerState} from '../redux/deviceManagerSlice';
 import WebView from 'react-native-webview';
+import {deleteDeviceFromUser} from '../services/firebase';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'deviceDetail'>;
 
@@ -31,7 +32,7 @@ const DeviceInfoDetailScreen = ({route}: Props) => {
   const theme = useTheme();
   const navigation = useNavigation();
   const dispatch = useDispatch();
-
+  const email = useSelector<RootState>(state => state.user.email);
   const [isEditable, setIsEditable] = useState<boolean>(false);
   const [isShowConfirmDeleteDialog, setIsShowConfirmDeleteDialog] =
     useState<boolean>(false);
@@ -81,8 +82,12 @@ const DeviceInfoDetailScreen = ({route}: Props) => {
     });
   };
   const handleConfirmDeleteDevice = () => {
+    console.log(email);
+
     setIsShowConfirmDeleteDialog(false);
-    dispatch(deleteDevice({id: deviceInput.id}));
+    dispatch(deleteDevice({uuid: deviceInput.uuid}));
+    deleteDeviceFromUser(email, deviceInput.uuid);
+    dispatch(filterDeviceByLocation());
 
     navigation.navigate('Device');
   };

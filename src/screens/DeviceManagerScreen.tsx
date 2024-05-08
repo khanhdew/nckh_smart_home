@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect, useLayoutEffect, useState} from 'react';
 import {
   GestureResponderEvent,
   SafeAreaView,
@@ -7,19 +7,25 @@ import {
   View,
 } from 'react-native';
 import {Button, Modal, Portal, Text} from 'react-native-paper';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import AddDeviceModal from '../components/AddDeviceModal';
 import DeviceItemList from '../components/DeviceItemList';
 import Device from '../interfaces/device';
-import {RootState} from '../redux/store';
+import {AppDispatch, RootState} from '../redux/store';
 import {DEVICE_LOCATIONS} from '../constants/device';
+import {filterDeviceByLocation} from '../redux/deviceSlice';
 
 const DeviceManagerScreen = () => {
-  const testListDevice = useSelector<RootState, {[key: string]: Device[]}>(
+  const dispatch = useDispatch<AppDispatch>();
+  const listDevice = useSelector<RootState, {[key: string]: Device[]}>(
     state => state.device.filteredListDevice,
   );
 
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+  useLayoutEffect(() => {
+    dispatch(filterDeviceByLocation());
+  }, []);
 
   // * Functions to handle press event
   function addDeviceHandle(_event: GestureResponderEvent): void {
@@ -47,12 +53,12 @@ const DeviceManagerScreen = () => {
 
         {/* Device List with SectionList */}
         <SectionList
-          sections={Object.keys(testListDevice).map(location => ({
+          sections={Object.keys(listDevice).map(location => ({
             location: location,
-            data: testListDevice[location],
+            data: listDevice[location],
           }))}
-          keyExtractor={item => item.id}
-          renderItem={({item}) => <DeviceItemList deviceId={item.id} />}
+          keyExtractor={item => item.uuid}
+          renderItem={({item}) => <DeviceItemList deviceUuid={item.uuid} />}
           renderSectionHeader={({section: {location}}) => (
             <View
               style={{

@@ -12,7 +12,20 @@
           "package_name": "com.nckh_smart_home"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "786118704628-lepp6j0pp60vbjbarfsu28c7n3b6cprs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nckh_smart_home",
+            "certificate_hash": "bca3d2840b5d069a70571da57b1c17212d8aa84c"
+          }
+        },
+        {
+          "client_id": "786118704628-tkgc40j2od0qhclavmicpdv3quo5tnto.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBbpfxcprNtkd4J991v8CnzXr_9bNksb48"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "786118704628-tkgc40j2od0qhclavmicpdv3quo5tnto.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

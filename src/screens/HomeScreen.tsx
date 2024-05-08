@@ -1,22 +1,46 @@
 import {View, Text, SafeAreaView, StyleSheet} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useState} from 'react';
 import {useTheme} from 'react-native-paper';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch, RootState} from '../redux/store';
 import {GreetingState, initGreetingInformation} from '../redux/greetingSlice';
-import {filterDeviceByLocation, initDeviceForTest} from '../redux/deviceSlice';
+import {addDevice, filterDeviceByLocation} from '../redux/deviceSlice';
+import {getAllDevice} from '../services/firebase';
+import Device from '../interfaces/device';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {addEmail} from '../redux/userSlice';
 
 const HomeScreen = () => {
-  const greetingData = useSelector<RootState, GreetingState>(
-    state => state.greeting,
-  );
   const dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
 
-  const [url, setUrl] = useState('');
+  const greetingData = useSelector<RootState, GreetingState>(
+    state => state.greeting,
+  );
+
+  const getUserData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('user');
+
+      if (JSON.parse(userData).email) {
+        dispatch(addEmail(JSON.parse(userData).email));
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
-    dispatch(initDeviceForTest());
+    getUserData();
+    // Firestore
+    getAllDevice().then(data => {
+      if (data) {
+        data.deviceList.forEach(item => {
+          dispatch(addDevice({device: item}));
+        });
+      }
+    });
+
     dispatch(filterDeviceByLocation());
     dispatch(initGreetingInformation());
   }, []);
@@ -50,8 +74,7 @@ const HomeScreen = () => {
             }}>
             <Text>Nhiệt độ</Text>
             <Text style={styles.greetingText}>
-              {greetingData.weatherCondition?.current.feelslike_c || '-- '}
-              *C
+              {greetingData.weatherCondition?.current.feelslike_c || '-- '}°C
             </Text>
           </View>
           <View

@@ -9,7 +9,6 @@ import React, {useEffect} from 'react';
 import {Alert} from 'react-native';
 // FCM
 import messaging from '@react-native-firebase/messaging';
-import {PermissionsAndroid} from 'react-native';
 // Navigation
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -22,13 +21,17 @@ import SettingScreen from './src/screens/SettingScreen';
 // Other
 import {Icon, MD3LightTheme, PaperProvider} from 'react-native-paper';
 import BellCameraScreen from './src/screens/BellCameraScreen';
-import {Provider} from 'react-redux';
-import {store} from './src/redux/store';
+import {Provider, useDispatch} from 'react-redux';
+import {AppDispatch, store} from './src/redux/store';
 import {
+  getAllDevice,
   getFCMToken,
-  getToken,
   requestUserNotificationPermission,
-} from './src/services/fcm';
+} from './src/services/firebase';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import SettingItemScreen from './src/screens/SettingItemScreen';
+import {addDevice} from './src/redux/deviceSlice';
+import Device from './src/interfaces/device';
 
 const AppCustomLightTheme = {
   ...MD3LightTheme,
@@ -37,6 +40,7 @@ const AppCustomLightTheme = {
     primary: '#DC6B19',
   },
 };
+//
 
 const AppBottomNavigation = () => {
   const Tab = createBottomTabNavigator();
@@ -53,7 +57,7 @@ const AppBottomNavigation = () => {
           title: 'Trang chủ',
           // eslint-disable-next-line react/no-unstable-nested-components
           tabBarIcon: ({color, size}) => (
-            <Icon source="camera" color={color} size={size} />
+            <Icon source="home" color={color} size={size} />
           ),
         }}
       />
@@ -68,7 +72,7 @@ const AppBottomNavigation = () => {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="History"
         component={HistoryScreen}
         options={{
@@ -78,7 +82,7 @@ const AppBottomNavigation = () => {
             <Icon source="bell" color={color} size={size} />
           ),
         }}
-      />
+      /> */}
       <Tab.Screen
         name="Setting"
         component={SettingScreen}
@@ -95,19 +99,25 @@ const AppBottomNavigation = () => {
 };
 
 function App(): React.JSX.Element {
+  // Navigation
+  const RootStack = createNativeStackNavigator();
+
   useEffect(() => {
     // Setting FCM
     requestUserNotificationPermission();
-    const fcmToken = getFCMToken();
+    getFCMToken();
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      const messageData = JSON.stringify(remoteMessage);
+      Alert.alert(messageData);
+    });
+    // Setting Auth
+    GoogleSignin.configure({
+      webClientId:
+        '786118704628-tkgc40j2od0qhclavmicpdv3quo5tnto.apps.googleusercontent.com',
     });
 
     return unsubscribe;
   }, []);
-
-  // Navigation
-  const RootStack = createNativeStackNavigator();
 
   return (
     <Provider store={store}>
@@ -127,6 +137,14 @@ function App(): React.JSX.Element {
               }}
             />
             <RootStack.Screen name="BellCamera" component={BellCameraScreen} />
+            <RootStack.Screen
+              name="SettingItem"
+              options={{
+                headerShown: true,
+                title: 'Cài đặt',
+              }}
+              component={SettingItemScreen}
+            />
           </RootStack.Navigator>
         </NavigationContainer>
       </PaperProvider>

@@ -20,31 +20,6 @@ export const deviceSlice = createSlice({
   name: 'device',
   initialState,
   reducers: {
-    // !WARN: This action for test, remove it
-    initDeviceForTest: state => {
-      function generateFakeDevice(): Device {
-        const LocationKeys = [...Object.keys(DEVICE_LOCATIONS)];
-        const LocationRandomKey =
-          LocationKeys[Math.floor(Math.random() * LocationKeys.length)];
-        const DeviceTypeKeys = [...Object.keys(DEVICE_TYPES)];
-        const DeviceTypeRandomKey =
-          DeviceTypeKeys[Math.floor(Math.random() * DeviceTypeKeys.length)];
-
-        return {
-          id: Math.random().toString(36).substring(2, 15), // Generates a random string
-          name: `Device-${Math.random().toString(36).substring(2, 5)}`, // Generates a random device name
-          location: LocationRandomKey, // Generates a random location name
-          type: DeviceTypeRandomKey,
-          quickActionStatus: false,
-          dimValue: 0,
-        };
-      }
-
-      // Example usage
-      for (let i = 0; i < 2; i++) {
-        state.listDevice.push(generateFakeDevice());
-      }
-    },
     filterDeviceByLocation: (state: DeviceState) => {
       state.filteredListDevice = state.listDevice.reduce(
         (acc: {[key: string]: Device[]}, device: Device) => {
@@ -59,11 +34,16 @@ export const deviceSlice = createSlice({
       );
     },
     addDevice: (state, action: PayloadAction<{device: Device}>) => {
-      state.listDevice.push(action.payload.device);
+      const addDeviceData = {
+        ...action.payload.device,
+        dimValue: 0,
+        quickActionStatus: false,
+      };
+      state.listDevice.push(addDeviceData);
     },
-    deleteDevice: (state, action: PayloadAction<{id: string}>) => {
+    deleteDevice: (state, action: PayloadAction<{uuid: string}>) => {
       state.listDevice = state.listDevice.filter(
-        device => device.id !== action.payload.id,
+        device => device.uuid !== action.payload.uuid,
       );
     },
 
@@ -72,7 +52,7 @@ export const deviceSlice = createSlice({
       action: PayloadAction<{changedDevice: Device}>,
     ) => {
       state.listDevice = state.listDevice.filter(
-        device => device.id !== action.payload.changedDevice.id,
+        device => device.uuid !== action.payload.changedDevice.uuid,
       );
       state.listDevice.push(action.payload.changedDevice);
     },
@@ -83,14 +63,14 @@ export const deviceSlice = createSlice({
       (
         state: DeviceState,
         action: PayloadAction<{
-          deviceId: string;
+          uuid: string;
           dimValue: number;
           quickActionStatus: boolean;
         }>,
       ) => {
         // code to update ui
         const deviceIndex = state.listDevice.findIndex(
-          device => device.id === action.payload.deviceId,
+          device => device.uuid === action.payload.uuid,
         );
         if (deviceIndex !== -1) {
           const device = state.listDevice[deviceIndex];
@@ -107,7 +87,10 @@ export const deviceSlice = createSlice({
 export const changeDeviceQuickAction = createAsyncThunk(
   'device/changeDeviceQuickAction',
   async (device: Device) => {
+    console.log('🚀 ~ deviceChange:', device);
+
     let apiBody = {};
+
     if (device.type === 'light') {
       apiBody = {
         led_status: device.quickActionStatus,
@@ -119,6 +102,7 @@ export const changeDeviceQuickAction = createAsyncThunk(
         speed: device.dimValue,
       };
     }
+    console.log('🚀 ~ apiBody:', apiBody);
     const res = await axios.post(
       `http://159.203.102.213:8085/api/control/ae_${device.id}`,
       {
@@ -130,7 +114,7 @@ export const changeDeviceQuickAction = createAsyncThunk(
     );
 
     return {
-      deviceId: device.id,
+      deviceId: device.uuid,
       quickActionStatus: device.quickActionStatus,
       dimValue: device.dimValue,
     };
@@ -139,7 +123,6 @@ export const changeDeviceQuickAction = createAsyncThunk(
 
 // Action creators are generated for each case reducer function
 export const {
-  initDeviceForTest,
   addDevice,
   deleteDevice,
   changeDeviceInfo,

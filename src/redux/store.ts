@@ -3,6 +3,7 @@ import deviceReducer from './deviceSlice';
 import greetingReducer from './greetingSlice';
 import deviceManagerReducer from './deviceManagerSlice';
 import appReducer from './appSlice';
+import userReducer from './userSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     greeting: greetingReducer,
     deviceManager: deviceManagerReducer,
     app: appReducer,
+    user: userReducer,
   },
 });
 
