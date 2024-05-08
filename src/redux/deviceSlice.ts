@@ -3,6 +3,7 @@ import type {PayloadAction} from '@reduxjs/toolkit';
 import {DEVICE_LOCATIONS, DEVICE_TYPES} from '../constants/device';
 import axios from 'axios';
 import Device from '../interfaces/device';
+import {subscribeToTopic} from '../services/firebase';
 
 export interface DeviceState {
   listDevice: Device[];
@@ -39,6 +40,9 @@ export const deviceSlice = createSlice({
         dimValue: 0,
         quickActionStatus: false,
       };
+      if (action.payload.device.type === 'bell') {
+        subscribeToTopic(action.payload.device.id);
+      }
       state.listDevice.push(addDeviceData);
     },
     deleteDevice: (state, action: PayloadAction<{uuid: string}>) => {
@@ -86,7 +90,8 @@ export const deviceSlice = createSlice({
 
 export const changeDeviceQuickAction = createAsyncThunk(
   'device/changeDeviceQuickAction',
-  async (device: Device) => {
+  async ({device, rgbValue}) => {
+    console.log('🚀 ~ rgbValue:', rgbValue);
     console.log('🚀 ~ deviceChange:', device);
 
     let apiBody = {};
@@ -100,6 +105,13 @@ export const changeDeviceQuickAction = createAsyncThunk(
       apiBody = {
         fan_status: !!device.dimValue,
         speed: device.dimValue,
+      };
+    } else if (device.type === 'rgbled') {
+      apiBody = {
+        ledrgb_status: true,
+        red: rgbValue.r,
+        green: rgbValue.g,
+        blue: rgbValue.b,
       };
     }
     console.log('🚀 ~ apiBody:', apiBody);

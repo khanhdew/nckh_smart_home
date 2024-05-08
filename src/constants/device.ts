@@ -8,6 +8,10 @@ export const DEVICE_TYPE_ICON: {
     name: 'lightbulb',
     color: '#000',
   },
+  rgbled: {
+    name: 'lightbulb',
+    color: '#00f',
+  },
   fan: {
     name: 'fan',
     color: '#000',
@@ -41,4 +45,5 @@ export const DEVICE_TYPES: {
   light: 'Bóng đèn',
   fan: 'Quạt',
   bell: 'Chuông cửa',
+  rgbled: 'Bóng đèn màu',
 };

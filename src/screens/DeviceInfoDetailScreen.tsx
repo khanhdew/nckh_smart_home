@@ -1,4 +1,4 @@
-import {StyleSheet, View, ScrollView, AppState} from 'react-native';
+import {StyleSheet, View, ScrollView, AppState, Alert} from 'react-native';
 import {Text} from 'react-native-paper';
 import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -16,6 +16,7 @@ import {
 import {useDispatch, useSelector} from 'react-redux';
 import {
   changeDeviceInfo,
+  changeDeviceQuickAction,
   deleteDevice,
   filterDeviceByLocation,
 } from '../redux/deviceSlice';
@@ -24,8 +25,35 @@ import {SelectList} from 'react-native-dropdown-select-list';
 import {DeviceManagerState} from '../redux/deviceManagerSlice';
 import WebView from 'react-native-webview';
 import {deleteDeviceFromUser} from '../services/firebase';
+import {TriangleColorPicker, toHsv, fromHsv} from 'react-native-color-picker';
+import Slider from '@react-native-community/slider';
+import ColorPicker from 'react-native-wheel-color-picker';
+import axios from 'axios';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'deviceDetail'>;
+
+function hexToRgb(hex) {
+  // Remove the hash at the beginning of the hex string if it's there
+  hex = hex.replace(/^#/, '');
+
+  // Parse the hex string into RGB components
+  let r, g, b;
+  if (hex.length === 3) {
+    // In case of shorthand hex color code
+    r = parseInt(hex.charAt(0) + hex.charAt(0), 16);
+    g = parseInt(hex.charAt(1) + hex.charAt(1), 16);
+    b = parseInt(hex.charAt(2) + hex.charAt(2), 16);
+  } else if (hex.length === 6) {
+    // In case of full hex color code
+    r = parseInt(hex.substring(0, 2), 16);
+    g = parseInt(hex.substring(2, 4), 16);
+    b = parseInt(hex.substring(4, 6), 16);
+  } else {
+    throw new Error('Invalid hex color format');
+  }
+
+  return {r, g, b};
+}
 
 const DeviceInfoDetailScreen = ({route}: Props) => {
   const device: Device = route.params?.device;
@@ -61,6 +89,9 @@ const DeviceInfoDetailScreen = ({route}: Props) => {
       value: label,
     }),
   );
+  const [ngrokUrlInput, setNgrokUrlInput] = useState('');
+  const [ngrokUrl, setNgrokUrl] = useState('');
+  const [lightColor, setLightColor] = useState('#ffffff');
 
   const handleClickChangeDeviceInfoBtn = () => {
     setIsEditable(!isEditable);
@@ -91,8 +122,11 @@ const DeviceInfoDetailScreen = ({route}: Props) => {
 
     navigation.navigate('Device');
   };
-  const handleGetBellVideoStream = () => {};
-  const handleGetBellImage = () => {};
+  const handlePushNgrokUrl = async () => {
+    await axios.post('http://159.203.102.213/fcm/initImgURL', {
+      ngrokUrl,
+    });
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -128,7 +162,6 @@ const DeviceInfoDetailScreen = ({route}: Props) => {
       {/*  */}
       {device.type === 'bell' && (
         <View>
-          <Text>{device.name}</Text>
           <View
             style={{
               flex: 1,
@@ -143,14 +176,59 @@ const DeviceInfoDetailScreen = ({route}: Props) => {
                 backgroundColor: '#ccc',
               }}
               source={{
-                uri: 'https://1062-14-162-241-59.ngrok-free.app/_capture',
+                uri: ngrokUrl,
+                headers: {'ngrok-skip-browser-warning': '12'},
               }}
             />
           </View>
           <View>
-            <Button mode="text">Xem trực tiếp</Button>
-            <Button>Lấy ảnh</Button>
+            <View style={{flexDirection: 'row', gap: 5, marginVertical: 10}}>
+              <TextInput
+                dense={true}
+                placeholder="Nhập url ngrok để xem hình ảnh"
+                value={ngrokUrlInput}
+                onChangeText={text => setNgrokUrlInput(text)}
+                style={{flex: 1}}
+              />
+              <Button onPress={handlePushNgrokUrl} mode="text">
+                Xác nhận
+              </Button>
+            </View>
+            <View
+              style={{flexDirection: 'row', justifyContent: 'center', gap: 20}}>
+              <Button
+                onPress={() => setNgrokUrl(`${ngrokUrlInput}/_stream`)}
+                mode="contained">
+                Xem trực tiếp
+              </Button>
+              <Button
+                onPress={() => setNgrokUrl(`${ngrokUrlInput}/_capture`)}
+                mode="contained">
+                Lấy ảnh
+              </Button>
+            </View>
           </View>
+        </View>
+      )}
+      {device.type === 'rgbled' && (
+        <View style={{flex: 1}}>
+          <ColorPicker
+            color={lightColor}
+            onColorChangeComplete={color => {
+              setLightColor(color);
+              console.log(`Color selected: ${hexToRgb(color)}`);
+              dispatch(
+                changeDeviceQuickAction({
+                  device: device,
+                  rgbValue: hexToRgb(color),
+                }),
+              );
+            }}
+            thumbSize={30}
+            sliderSize={30}
+            noSnap={true}
+            row={false}
+          />
         </View>
       )}
       {/*  */}
@@ -241,7 +319,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   deviceInfo: {
-    paddingBottom: 50,
+    paddingVertical: 15,
     rowGap: 10,
   },
   actionButton: {

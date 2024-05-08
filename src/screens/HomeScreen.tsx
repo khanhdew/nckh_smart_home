@@ -8,11 +8,12 @@ import {addDevice, filterDeviceByLocation} from '../redux/deviceSlice';
 import {getAllDevice} from '../services/firebase';
 import Device from '../interfaces/device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {addEmail} from '../redux/userSlice';
+import {addEmail, removeEmail} from '../redux/userSlice';
 
 const HomeScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const theme = useTheme();
+  const userEmail = useSelector<RootState>(state => state.user.email);
 
   const greetingData = useSelector<RootState, GreetingState>(
     state => state.greeting,
@@ -22,7 +23,12 @@ const HomeScreen = () => {
     try {
       const userData = await AsyncStorage.getItem('user');
 
-      if (JSON.parse(userData).email) {
+      console.log('🚀 ~ userData:', userData);
+
+      if (userData === null) {
+        dispatch(addEmail('Test'));
+      } else {
+        console.log(JSON.parse(userData).email);
         dispatch(addEmail(JSON.parse(userData).email));
       }
     } catch (err) {
@@ -33,7 +39,8 @@ const HomeScreen = () => {
   useEffect(() => {
     getUserData();
     // Firestore
-    getAllDevice().then(data => {
+    console.log('userEmail:', userEmail);
+    getAllDevice(userEmail === null ? '' : userEmail).then(data => {
       if (data) {
         data.deviceList.forEach(item => {
           dispatch(addDevice({device: item}));

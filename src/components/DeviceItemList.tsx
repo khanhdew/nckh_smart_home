@@ -11,7 +11,7 @@ import Device from '../interfaces/device';
 import {useNavigation} from '@react-navigation/native';
 import type {RouteProp} from '@react-navigation/native';
 import {RootStackParamList} from '../interfaces/reactNavigation';
-import {View} from 'react-native';
+import {Alert, View} from 'react-native';
 import {
   DEVICE_LOCATIONS,
   DEVICE_TYPES,
@@ -24,6 +24,7 @@ import {
   filterDeviceByLocation,
 } from '../redux/deviceSlice';
 import Slider from '@react-native-community/slider';
+import {TriangleColorPicker, toHsv, fromHsv} from 'react-native-color-picker';
 
 interface IProps {
   deviceUuid: string;
@@ -39,6 +40,7 @@ const DeviceItemList = ({deviceUuid}: IProps) => {
   ).find(device => device.uuid === deviceUuid);
   const [changedDevice, setChangedDevice] = useState<Device>(device);
   const [lightDimValue, setLightDimValue] = useState<number>(0);
+  const [lightColor, setLightColor] = useState(toHsv('white'));
 
   const deviceInfoHandle = (): void => {
     navigation.navigate('DeviceDetailInfo', {
@@ -51,7 +53,7 @@ const DeviceItemList = ({deviceUuid}: IProps) => {
   };
 
   useEffect(() => {
-    dispatch(changeDeviceQuickAction(changedDevice));
+    dispatch(changeDeviceQuickAction({changedDevice, undefined}));
 
     dispatch(filterDeviceByLocation());
   }, [changedDevice]);
@@ -104,7 +106,10 @@ const DeviceItemList = ({deviceUuid}: IProps) => {
             maximumValue={100}
             step={1}
             onSlidingComplete={() =>
-              handleQuickAction(!!lightDimValue, lightDimValue)
+              handleQuickAction(
+                !!lightDimValue,
+                Math.round(lightDimValue * 2.55),
+              )
             }
             thumbTintColor={theme.colors.primary}
             minimumTrackTintColor="yellow"
@@ -157,9 +162,9 @@ const DeviceItemList = ({deviceUuid}: IProps) => {
         </Card.Actions>
       ) : (
         <View style={{marginVertical: 10}}>
-          <Button mode="text" onPress={handleGoToWebview}>
+          {/* <Button mode="text" onPress={handleGoToWebview}>
             Xem trực tiếp camera
-          </Button>
+          </Button> */}
         </View>
       )}
     </Card>

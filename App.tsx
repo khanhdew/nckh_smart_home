@@ -106,9 +106,15 @@ function App(): React.JSX.Element {
     // Setting FCM
     requestUserNotificationPermission();
     getFCMToken();
+
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       const messageData = JSON.stringify(remoteMessage);
-      Alert.alert(messageData);
+      console.log('FCM: ', messageData);
+
+      Alert.alert(
+        messageData.notification.title,
+        messageData.notification.body,
+      );
     });
     // Setting Auth
     GoogleSignin.configure({

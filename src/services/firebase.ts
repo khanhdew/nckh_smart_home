@@ -13,12 +13,18 @@ import firestore from '@react-native-firebase/firestore';
 export const getFCMToken = async () => {
   const fcmToken = await messaging().getToken();
   console.log('🚀 ~ fcmToken:', fcmToken);
-
+  // TODO: Push Token to server
   return fcmToken;
 };
 
 export const requestUserNotificationPermission = () => {
   PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+};
+
+export const subscribeToTopic = topic => {
+  messaging()
+    .subscribeToTopic(topic)
+    .then(() => console.log('Subscribed to topic!'));
 };
 
 // Authentication
@@ -44,12 +50,17 @@ export const signInWithGoogle = async () => {
 };
 
 // FireStore
-export const getAllDevice = async () => {
-  const deviceDocument = await firestore().collection('User').get();
+export const getAllDevice = async email => {
+  const deviceDocument = await firestore()
+    .collection('User')
+    .where('email', '==', email)
+    .get();
 
   if (deviceDocument.empty) {
     return undefined;
   }
+
+  console.log('deviceCloud:', deviceDocument.docs[0]._data);
 
   return deviceDocument.docs[0]._data;
 };
